@@ -37,7 +37,9 @@ const SixColumnInput: React.FC<Props> = ({ values, onChange }) => {
           type="text"
           maxLength={2}
           value={val}
-          ref={(el) => (inputRefs.current[index] = el)}
+          ref={(el) => {
+            if (el) inputRefs.current[index] = el;
+          }}
           onChange={(e) => handleChange(e, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           style={{
