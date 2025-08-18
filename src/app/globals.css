@@ -24,3 +24,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.table-grid {
+    @media (width >= 1400px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+::file-selector-button {
+  /* Basic styling */
+  background-color: #101828; /* Green background */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding inside the button */
+  border: none; /* Remove default border */
+  cursor: pointer; /* Indicate it's clickable */
+  font-size: 16px; /* Font size */
+  font-family: sans-serif; /* Font family */
+}
+
+/* Add a hover effect for interactivity */
+::file-selector-button:hover {
+  background-color: #111; /* Darker green on hover */
+}
