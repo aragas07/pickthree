@@ -29,6 +29,18 @@ const SixColumnInput: React.FC<Props> = ({ values, onChange }) => {
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const paste = e.clipboardData.getData('Text');
+    const parts = paste.split('-');
+
+    if (parts.length === 6 && parts.every(p => /^[0-9]{2}$/.test(p))) {
+      e.preventDefault(); // Stop default paste behavior
+      onChange(parts.slice(0, 6)); // Update all six values
+
+      // Optional: focus last input
+      inputRefs.current[5]?.focus();
+    }
+  };
   return (
     <div className="grid grid-cols-6 gap-2 w-fit">
       {values.map((val, index) => (
@@ -42,6 +54,7 @@ const SixColumnInput: React.FC<Props> = ({ values, onChange }) => {
           }}
           onChange={(e) => handleChange(e, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
+          onPaste={handlePaste}
           style={{
             width: '50px',
             height: '50px',
