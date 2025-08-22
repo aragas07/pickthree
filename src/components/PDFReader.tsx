@@ -1,13 +1,6 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
-import { pdfjs } from 'react-pdf';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
-
 type Props = {
   permutations: string[][];
 };
@@ -17,18 +10,27 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
   const [total, setTotal] = useState<number>(0.00);
   const [tables, setTables] = useState<string[][][]>([]);
   const [lines] = useState<string[]>([]);
-
   useEffect(() => {
     if (lines.length > 0 && permutations.length > 0) {
       matchHits(lines, permutations);
     }
   }, [lines, permutations]);
+  
+  
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    const pdfjsLib = await import('pdfjs-dist');
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url,
+    ).toString();
+
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
 
     const detectedTables: string[][][] = [];
 
