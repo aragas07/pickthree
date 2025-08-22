@@ -15,8 +15,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
   const [textContent, setTextContent] = useState('');
   const [total, setTotal] = useState<number>(0.00);
   const [tables, setTables] = useState<string[][][]>([]);
-  const [lines, setLines] = useState<string[]>([]);
-  const [hits, setHits] = useState<string[]>([]);
+  const [lines] = useState<string[]>([]);
 
   useEffect(() => {
     if (lines.length > 0 && permutations.length > 0) {
@@ -89,8 +88,10 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       }
     }
     setTotal(total)
-    setHits(newHits);
-    setTextContent(newHits.join('\n'));
+    if(newHits.length == 0)
+      setTextContent("No Winning Hits!");
+    else
+      setTextContent(newHits.join('\n'));
   };
 
   return (
@@ -105,7 +106,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       {/* Display plain text */}
       <h2 className="mt-8 font-bold">Total hits: ₱ {total.toFixed(2)}</h2>
       <pre style={{ whiteSpace: 'pre-wrap', background: '#f4f4f4', padding: '1rem' }}>
-        {textContent || 'No text extracted yet.'}
+        {textContent || 'Unit Hits.'}
       </pre>
 
       {/* Display extracted tables */}
