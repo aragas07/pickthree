@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { pdfjs } from 'react-pdf';
+import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -21,7 +22,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
     if (lines.length > 0 && permutations.length > 0) {
       matchHits(lines, permutations);
     }
-  }, [permutations]);
+  }, [lines, permutations]);
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -35,7 +36,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
 
-      const pageTextItems = content.items as any[];
+      const pageTextItems = content.items as TextItem[];
       const rows: string[][] = [];
 
       let currentRow: string[] = [];
