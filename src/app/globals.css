@@ -31,17 +31,22 @@ body {
     }
 }
 ::file-selector-button {
-  /* Basic styling */
-  background-color: #101828; /* Green background */
-  color: white; /* White text */
-  padding: 10px 20px; /* Padding inside the button */
-  border: none; /* Remove default border */
-  cursor: pointer; /* Indicate it's clickable */
-  font-size: 16px; /* Font size */
-  font-family: sans-serif; /* Font family */
+  background-color: #101828;
+  color: white; 
+  padding: 10px 20px; 
+  border: none; 
+  cursor: pointer;
+  font-size: 16px; 
+  font-family: sans-serif;
 }
 
-/* Add a hover effect for interactivity */
-::file-selector-button:hover {
-  background-color: #111; /* Darker green on hover */
+input[type="file"]::file-selector-button {
+  background-color: #e6e8fd;      
+  color: #1f1e1e;                   
+  padding: 10px 16px;
+  border: 1px solid #334155;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Segoe UI', sans-serif;
+  transition: background-color 0.2s, border-color 0.2s;
 }
