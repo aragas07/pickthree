@@ -108,7 +108,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       />
       {/* Display plain text */}
       <h2 className="mt-8 font-bold">Total hits: ₱ {total.toFixed(2)}</h2>
-      <pre style={{ whiteSpace: 'pre-wrap', background: '#f4f4f4', padding: '1rem' }}>
+      <pre className="bg-blue-50 text-gray-950 p-3 rounded-b-md">
         {textContent || 'Unit Hits.'}
       </pre>
 
