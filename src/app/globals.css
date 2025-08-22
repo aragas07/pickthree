@@ -39,14 +39,3 @@ body {
   font-size: 16px; 
   font-family: sans-serif;
 }
-
-input[type="file"]::file-selector-button {
-  background-color: #e6e8fd;      
-  color: #1f1e1e;                   
-  padding: 10px 16px;
-  border: 1px solid #334155;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: 'Segoe UI', sans-serif;
-  transition: background-color 0.2s, border-color 0.2s;
-}

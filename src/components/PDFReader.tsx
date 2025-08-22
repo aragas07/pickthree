@@ -104,7 +104,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
         type="file"
         accept=".pdf"
         onChange={handleFileChange}
-        className="w-full text=sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-100 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
+        className="w-full text=sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-100"
       />
       {/* Display plain text */}
       <h2 className="mt-8 font-bold">Total hits: ₱ {total.toFixed(2)}</h2>
