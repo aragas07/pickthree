@@ -9,9 +9,9 @@ import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import Link from 'next/link';
 
 export default function Report() {
-    const [hasContent, setHasContent] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [uploadFileLoading, setUploadFileLoading] = useState<boolean>(false);
+    const [hasContent, setHasContent] = useState<Boolean>(false);
+    const [loading, setLoading] = useState<Boolean>(false);
+    const [uploadFileLoading, setUploadFileLoading] = useState<Boolean>(false);
     const [sheetID, setSheetID] = useState('');
     const [sheets, setSheets] = useState<Sheet[]>([]);
     const [activeSheet, setActiveSheet] = useState<number>(0);
