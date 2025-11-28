@@ -38,8 +38,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ message: `Updated ${body.updates.length} rows successfully` });
-  } catch (error: any) {
-    console.error('Google Sheets batchUpdate error:', error.message || error);
-    return NextResponse.json({ message: 'Failed to update rows' }, { status: 500 });
+  } catch (e) {
+    if (e instanceof Error) {
+      return NextResponse.json({ error: e.message }, { status: 500 });
+    } else {
+      return NextResponse.json({ error: String(e) }, { status: 500 });
+    }
   }
 }

@@ -5,3 +5,8 @@ type Parameter = {
     hits: number,
     tables: string [][][]
 }
+
+type Sheet = {
+  id: string;
+  name: string;
+}

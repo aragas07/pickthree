@@ -84,28 +84,28 @@ const ReportPDFReader: React.FC<Props> = ({ file, combination, className }) => {
   };
 
   // Match logic (can be improved as needed)
-  const matchHits = (linesToCheck: string[], combination: string) => {
-    const newPermutations = [[...combination]]; // You'll want actual permutations if needed
-    const flatPerms = newPermutations.map((p) => p.join('').replace(/\s+/g, ''));
-    const newHits: string[] = [];
-    let matchedTotal = 0;
+  // const matchHits = (linesToCheck: string[], combination: string) => {
+  //   const newPermutations = [[...combination]]; // You'll want actual permutations if needed
+  //   const flatPerms = newPermutations.map((p) => p.join('').replace(/\s+/g, ''));
+  //   const newHits: string[] = [];
+  //   let matchedTotal = 0;
 
-    for (let i = 0; i < linesToCheck.length; i++) {
-      const line = linesToCheck[i].replace(/\s+/g, '');
-      if (flatPerms.includes(line)) {
-        const nextLine = linesToCheck[i + 2] ?? '0';
-        newHits.push(`${linesToCheck[i]} = ${linesToCheck[i + 1]} ${nextLine}`);
-        matchedTotal += parseFloat(nextLine);
-      }
-    }
+  //   for (let i = 0; i < linesToCheck.length; i++) {
+  //     const line = linesToCheck[i].replace(/\s+/g, '');
+  //     if (flatPerms.includes(line)) {
+  //       const nextLine = linesToCheck[i + 2] ?? '0';
+  //       newHits.push(`${linesToCheck[i]} = ${linesToCheck[i + 1]} ${nextLine}`);
+  //       matchedTotal += parseFloat(nextLine);
+  //     }
+  //   }
 
-    setTotal((prevTotal) => prevTotal + matchedTotal);
-    if (newHits.length == 0) {
-      setTextContent((prev) => prev + '\nNo Winning Hits in one file!');
-    } else {
-      setTextContent((prev) => prev + '\n' + newHits.join('\n'));
-    }
-  };
+  //   setTotal((prevTotal) => prevTotal + matchedTotal);
+  //   if (newHits.length == 0) {
+  //     setTextContent((prev) => prev + '\nNo Winning Hits in one file!');
+  //   } else {
+  //     setTextContent((prev) => prev + '\n' + newHits.join('\n'));
+  //   }
+  // };
 
   return (
     <div className={className}>

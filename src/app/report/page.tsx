@@ -6,13 +6,14 @@ import { ImUpload2 } from "react-icons/im";
 import { IoClose } from "react-icons/io5";
 import { TiArrowSortedDown } from "react-icons/ti";
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
+import Link from 'next/link';
 
 export default function Report() {
     const [hasContent, setHasContent] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [uploadFileLoading, setUploadFileLoading] = useState<boolean>(false);
     const [sheetID, setSheetID] = useState('');
-    const [sheets, setSheets] = useState<any[]>([]);
+    const [sheets, setSheets] = useState<Sheet[]>([]);
     const [activeSheet, setActiveSheet] = useState<number>(0);
     const [data, setData] = useState<string[][]>([]);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -40,6 +41,7 @@ export default function Report() {
         }
     };
 
+
     const getSheet = async (e: string, sheetId: string) => {
         const res = await fetch(`/api/get-cell?sheetId=${sheetId}&sheetName=${e}`);
         const result = await res.json();
@@ -55,16 +57,16 @@ export default function Report() {
     const handleDrop = useCallback((e: DragEvent<HTMLLabelElement>) => {
         e.preventDefault();
         setSelectedFiles(Array.from(e.dataTransfer.files));
-    }, [params]);
+    }, []);
 
     const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
         setSelectedFiles(e.target.files ? Array.from(e.target.files) : [])
-        handleUpdate(selectedFiles)
+        //handleUpdate(selectedFiles)
     };
 
     const processFile = async (files: File[]) => {
         setUploadFileLoading(true);
-        let paramArray: Parameter[] = []; 
+        const paramArray: Parameter[] = []; 
         for (const file of files) {
             const arrayBuffer = await file.arrayBuffer();
             const pdfjsLib = await import("pdfjs-dist");
@@ -130,30 +132,31 @@ export default function Report() {
         setUploadFileLoading(false);
     }
 
+    useEffect(()=>{},[draw])
     useEffect(() => {
         processFile(selectedFiles)            
-    },[selectedFiles])
+    },[selectedFiles, processFile])
 
-    const handleUpdate = async (files: File[]) => {
-        const wholeData = data.map(data => {
-            const joinText = data.join('|')
-        }).join('!')
-        files.forEach(file => {
+    // const handleUpdate = async (files: File[]) => {
+    //     const wholeData = data.map(data => {
+    //         const joinText = data.join('|')
+    //     }).join('!')
+    //     files.forEach(file => {
 
-        })
-        // const res = await fetch(`/api/update-sheet?sheetId=${sheetID}&sheetName=${sheet}`, {
-        // method: 'POST',
-        // headers: { 'Content-Type': 'application/json' },
-        // body: JSON.stringify({ }),
-        // });
-    };
+    //     })
+    //     // const res = await fetch(`/api/update-sheet?sheetId=${sheetID}&sheetName=${sheet}`, {
+    //     // method: 'POST',
+    //     // headers: { 'Content-Type': 'application/json' },
+    //     // body: JSON.stringify({ }),
+    //     // });
+    // };
     const handleRemove = (indexToRemove: number, arrayIndex: number) => {
         setParams(prev => prev.map((param, index) => index === arrayIndex ? param.filter((_, idx) => idx !== indexToRemove) : param))
     };
 
     const changeActiveSheet = (index: number) => {
         setActiveSheet(index);
-        getSheet(sheets[index], sheetID);
+        getSheet(sheets[index].name, sheetID);
     }
 
     const changeDraw = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -172,7 +175,7 @@ export default function Report() {
     return (
         <main className="p-4 flex flex-col min-h-screen max-w-full mx-auto">
             <header className="w-full flex pb-4">
-                <a href="/" className="absolute top-1 right-4 px-4 py-0.5 rounded-md border-2 border-gray-500 hover:bg-gray-500 transition hover:text-white">P3 Finder</a>
+                <Link href="/" className="absolute top-1 right-4 px-4 py-0.5 rounded-md border-2 border-gray-500 hover:bg-gray-500 transition hover:text-white">P3 Finder</Link>
                 <p hidden>15pJpi6hLjGjZH90m8gHZMfnIhKGDWZ8YwzUkpTM2NRk</p>
                 <p>https://docs.google.com/spreadsheets/d/17TI4KhMeDYBo1fW3PGEY3mvaC3k4d_L23_y38RRNOyo/edit?gid=1219487365#gid=1219487365</p>
                 <input
@@ -226,12 +229,12 @@ export default function Report() {
                                 <div className='flex'>
                                     {sheets.map((sheet, index) => (
                                         <div key={index} className='px-3 py-4'>
-                                            <a onClick={() => changeActiveSheet(index)} className={` hover:bg-blue-100 hover:dark:bg-blue-950 py-2 px-6 rounded-2xl ${index === activeSheet ? 'bg-blue-700 text-white' : ''} cursor-default`}>{sheet}</a>
+                                            <a onClick={() => changeActiveSheet(index)} className={` hover:bg-blue-100 hover:dark:bg-blue-950 py-2 px-6 rounded-2xl ${index === activeSheet ? 'bg-blue-700 text-white' : ''} cursor-default`}>{sheet.name}</a>
                                         </div>
                                     ))}
                                 </div>
                                 {sheets.map((sheet, index) => (
-                                    <div hidden={index !== activeSheet} onLoad={() => getSheet(sheet, sheetID)} key={index} className="grid p-4">
+                                    <div hidden={index !== activeSheet} onLoad={() => getSheet(sheet.name, sheetID)} key={index} className="grid p-4">
                                         <label
                                             onDrop={(data) => handleDrop(data)}
                                             onDragOver={handleDragOver}

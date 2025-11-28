@@ -16,8 +16,11 @@ export async function GET(req: NextRequest) {
 
 
     return NextResponse.json({ sheets: sheetList });
-  } catch (error: any) {
-    console.error('Error fetching sheets:', error.message || error);
-    return NextResponse.json({ error: 'Failed to get sheets' }, { status: 500 });
+  } catch (e) {
+    if (e instanceof Error) {
+      return NextResponse.json({ error: e.message }, { status: 500 });
+    } else {
+      return NextResponse.json({ error: String(e) }, { status: 500 });
+    }
   }
 }
