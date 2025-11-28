@@ -1,0 +1,83 @@
+[33mcommit b044a99c378c9795543e30491e39fc8650128a65[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Nov 28 18:43:43 2025 +0800
+
+    remove unnecesarry file
+
+[33mcommit 0745d0547888151bed9b345d5c47a84539776f1f[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Nov 28 18:38:42 2025 +0800
+
+    add upload
+
+[33mcommit 5f9f8410a1bb486d8d9a2ca46b62643e7d90bdeb[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 29 21:56:59 2025 +0800
+
+    add reports
+
+[33mcommit 4d8c835bc6b94dd33aa2876998528db179e0e6b9[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 29 21:55:39 2025 +0800
+
+    add report
+
+[33mcommit f71372b83a5fa6eb41970ed2031d6168896bc2d0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 21:04:16 2025 +0800
+
+    pro
+
+[33mcommit b8676cd7d1252b44b205c5953628c3265a7ea8d0[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 20:05:32 2025 +0800
+
+    add theme color
+
+[33mcommit 88e54f4330f484b5b3ae1b76573115edfdc872a4[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 17:49:34 2025 +0800
+
+    add handle paste
+
+[33mcommit 0a3b120537b5bf370006c29555a0aef2c21b712b[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 17:41:28 2025 +0800
+
+    change text color for the hits
+
+[33mcommit 21c3f3237a780ebd6c967f6f2ce0102a93d37bd5[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 17:30:28 2025 +0800
+
+    fix error
+
+[33mcommit 237051a44f8de3bd0c2a55d48d2fa3be4b46f185[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 15:21:41 2025 +0800
+
+    fix the block of eslint
+
+[33mcommit 266b37acb10b6306bc49f00cd3b387bb04d9bdaf[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Fri Aug 22 15:03:02 2025 +0800
+
+    update logic
+
+[33mcommit 0c9feb742ad82234cc303de9ff339d2429de0643[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Mon Aug 18 21:02:12 2025 +0800
+
+    fix rel error
+
+[33mcommit 7c0df085db71178fc1dce88539b2ac9ac8dd8ab9[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Mon Aug 18 20:47:42 2025 +0800
+
+    first commit
+
+[33mcommit b406cef8975493d94b9f791cded0fecb00d8f7dd[m
+Author: aragas07 <argie.ragas@dorsu.edu.ph>
+Date:   Tue Aug 12 18:30:54 2025 +0800
+
+    Initial commit from Create Next App
