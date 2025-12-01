@@ -1,12 +1,8 @@
 type Parameter = {
     file: File,
-    show: Boolean,
+    game: string,
+    show: boolean,
     total: string,
-    hits: number,
+    hits: string,
     tables: string [][][]
-}
-
-type Sheet = {
-  id: string;
-  name: string;
 }

@@ -31,7 +31,7 @@ export default function Home() {
         <div className="w-fit">
           <h1 className='p-3 text-2xl font-bold w-full text-center'>Enter combinations</h1>
           <SixColumnInput values={inputValues} onChange={setInputValues} />
-          <button type="button" className="text-white bg-blue-700 hover:bg-blue800 px-6 py-1.5 mt-4 rounded-lg" onClick={handleGenerate}>Find</button>
+          <button type="button" className="text-white bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg" onClick={handleGenerate}>Find</button>
         </div>
       </div>
       <div className="mt-4 p-4">
