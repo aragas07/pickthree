@@ -54,12 +54,11 @@ export default function TestPage() {
       // }
   };
   
-  const [sheets, setSheets] = useState<Sheet[]>([]);
 
   const handleGetSheets = async () => {
     const res = await fetch('/api/get-sheets');
     const result = await res.json();
-    setSheets(result.sheets || []);
+    //setSheets(result.sheets || []);
   };
 
   return (
