@@ -139,10 +139,10 @@ export default function Report() {
         const date = new Date()
 
         const hours = date.getHours()
-        if (hours < 2) setDraw('1')
-        else if (hours < 5) setDraw('2')
+        if (hours < 14) setDraw('1')
+        else if (hours < 17) setDraw('2')
         else setDraw('3')
-
+        console.log('hour: ',hours)
     }, [])
 
     // const handleUpdate = async (files: File[]) => {
@@ -181,27 +181,34 @@ export default function Report() {
                     item.hits = '0'
                     const EZ2 = item.game.match(/(EZ2[1-3])/i)
                     const SWR2 = item.game.match(/(SWR2)/i)
-
+                    const LST3 = item.game.match(/(LST3)/i)
                     for (let i = 0; i < item.tables.length; i++) {
                         const tableGroup = item.tables[i]
                         for (let j = 0; j < tableGroup.length; j++) {
                             const table = tableGroup[j]
                             for (let k = 0; k < table.length; k++) {
-                                if (EZ2 && twoD === table[k]) {
-                                    item.hits = item.tables[i][j][k + 2]
-                                } else if(SWR2 && threeD.substring(1) === table[k]) {
-                                    item.hits = item.tables[i][j][k + 2]
+                                const hits = item.tables[i][j][k + 1] === '₱' ? item.tables[i][j][k + 2] : item.tables[i][j][k + 1]
+                                if (EZ2) {
+                                    if (twoD === table[k])
+                                        item.hits = hits
+                                } else if(SWR2) {
+                                    if (threeD.substring(1) === table[k])
+                                        item.hits = hits
+                                } else if(LST3) {
+                                    console.log('last 3 :', LST3, fourD.slice(-3), table[k])
+                                    if(fourD.slice(-3) === table[k])
+                                        item.hits = hits
                                 } else {
                                     if (draw === '3') {
                                         const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
                                         if (sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === table[k])) {
-                                            item.hits = item.tables[i][j][k + 1]
+                                            item.hits = hits
                                         } else if (fourAndTwoD || threeD === table[k]) {
-                                            item.hits = item.tables[i][j][k + 1]
+                                            item.hits = hits
                                         }
                                     } else {
                                         if (threeD === table[k] || threeD.substring(1) === table[k] || fourD.slice(-4) === table[k]) {
-                                            item.hits = item.tables[i][j][k + 1]
+                                            item.hits = hits
                                         }
                                     }
                                 }
@@ -252,7 +259,7 @@ export default function Report() {
                                                 <option value="3">3rd Draw</option>
                                             </select>
                                         </div>
-                                        <div className='grid'>
+                                        <div hidden = {draw !== '3'} className='grid'>
                                             <label>6D / 4D</label>
                                             <input
                                                 type="text"
@@ -328,10 +335,10 @@ export default function Report() {
                                                                             <div className='m-1 cursor-pointer flex items-center justify-between'>
                                                                                 <h1 className="font-bold" onClick={() => { displayFunction(fileIndex, index) }}>{`( ${item.game} ) ${item.file.name.replace(item.game, "")}`}</h1>
                                                                                 <div>
-                                                                                    <TiArrowSortedDown className={`group-hover:inline hidden transition ${item.show ? 'rotate-180' : ''}`} onClick={() => { displayFunction(fileIndex, index) }} />
+                                                                                    <TiArrowSortedDown className={`group-hover:inline text-xl hidden transition ${item.show ? 'rotate-180' : ''}`} onClick={() => { displayFunction(fileIndex, index) }} />
                                                                                     <IoClose
                                                                                         onClick={() => handleRemove(fileIndex, index)}
-                                                                                        className="ml-3 group-hover:inline hidden hover:bg-gray-500 rounded-2xl hover:text-white transition duration-200 cursor-pointer"
+                                                                                        className="ml-3 group-hover:inline hidden text-xl hover:bg-gray-500 rounded-2xl hover:text-white transition duration-200 cursor-pointer"
                                                                                     />
                                                                                     <div hidden={item.show ? false : true} className="group-hover:hidden inline">
                                                                                         <div className="flex space-x-8 font-semibold">
@@ -358,16 +365,18 @@ export default function Report() {
                                                                                                             {table.map((row, rIdx) => (
                                                                                                                 <tr key={rIdx}>
                                                                                                                     {row.map((cell, cIdx) => {
+                                                                                                                        const LST3 = item.game.match(/(LST3)/i)
                                                                                                                         const SWR2 = item.game.match(/(SWR2)/i)
                                                                                                                         const isEZgame = item.game.match(/(EZ2[1-3])/i)
                                                                                                                         const threeMatch = threeD === cell
                                                                                                                         const fourAndTwoD = fourD.slice(-4) === cell || fourD.slice(-2) === cell
-                                                                                                                        const isMatch = isEZgame && twoD === cell ? true : 
-                                                                                                                            SWR2 && threeD.substring(1) === cell ? true : draw === '3' ?
-                                                                                                                                sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === cell) ?
-                                                                                                                                    true : fourAndTwoD || threeMatch ?
-                                                                                                                                        true : false : 
-                                                                                                                                        threeD.substring(1) === cell || threeMatch || fourD.slice(-4) === cell
+                                                                                                                        const isMatch = isEZgame ? twoD === cell ? true : false : 
+                                                                                                                            SWR2 ? threeD.substring(1) === cell ? true : false : 
+                                                                                                                                LST3 ? fourD.slice(-3) === cell ? true : false : draw === '3' ?
+                                                                                                                                    sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === cell) ?
+                                                                                                                                        true : fourAndTwoD || threeMatch ?
+                                                                                                                                            true : false : 
+                                                                                                                                                threeD.substring(1) === cell || threeMatch || fourD.slice(-4) === cell
                                                                                                                         return (
                                                                                                                             <td
                                                                                                                                 key={cIdx}
