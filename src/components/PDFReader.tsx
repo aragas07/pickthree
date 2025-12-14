@@ -77,7 +77,6 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
     const allText = lines.join(" ")
     const match = allText.match(/(grand\s*total|total\s*amount)\s*[:\-]?\s*(₱|P)?\s*([\d,]+\.\d{2})/i)
     setGross(match ? match[3] : '0')
-    console.log(match)
     setTables(detectedTables);
   };
   const matchHits = (linesToCheck: string[], newPermutations: string[][]) => {

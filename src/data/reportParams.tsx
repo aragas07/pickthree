@@ -25,6 +25,7 @@ export const SheetNameMap: Record<string, string> = {
 export const GameSet: Record<string, string> = {
     "Last 2": "SIM 1",
     "Swertres": "SIM 2",
+    "Last 3": "SIM 2",
     "4 Digit": "SIM 3"
 }
 

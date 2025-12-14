@@ -105,6 +105,7 @@ export async function setSheetValue(
                         i++
                     }
                     fileIndex++
+                    console.log(tableData)
                 }
                 allSheetData.push(sheetCurrentData)
             }
