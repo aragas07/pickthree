@@ -16,6 +16,7 @@ export default function TestPage() {
     { row: 5, values: ['Argie', 456] },
   ]);
 
+  const dataSample = [['asdf','asdfa',undefined,'argie'],['ragas','arlyn']]
   // Update a row value (simple example)
   const handleChangeRowValue = (index: number, value: string) => {
     const updated = [...updates];
@@ -24,13 +25,20 @@ export default function TestPage() {
   };
 
   const handleUpdate = async () => {
-    // const sheetId = '17TI4KhMeDYBo1fW3PGEY3mvaC3k4d_L23_y38RRNOyo';
-    // const sheetName = 'Sheet1';
+    const sheetId = '17TI4KhMeDYBo1fW3PGEY3mvaC3k4d_L23_y38RRNOyo';
+    const sheetName = 'Sheet1!A3';
+    const res = await fetch(`/api/update-sheet`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ spreadsheetId: sheetId, sheetName: sheetName, value: dataSample }),
+    });
     // const res = await fetch(`/api/update-sheet?sheetId=${sheetId}&sheetName=${sheetName}`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ updates }),
-    // });
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ 
+    //                 value: [['asdf'],['adfadsf','asdfadsfgagh']]
+    //             }),
+    //         });
   };
 
   // const [cellValue, setCellValue] = useState<string | null>(null);
@@ -71,7 +79,7 @@ export default function TestPage() {
     <div className='mt-4'>
       <h1>All Sheets in Spreadsheet</h1>
       <button className='bg-blue-500 px-3 text-white' onClick={handleGetSheets}>Load Sheets</button>
-
+      <button onClick={handleUpdate}>update</button>
       <ul>
       </ul>
     </div>

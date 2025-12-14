@@ -12,32 +12,21 @@ interface RequestBody {
 
 export async function POST(req: NextRequest) {
   try {
-    const body: RequestBody = await req.json();
-    const { searchParams } = new URL(req.url);
-    const spreadsheetId = searchParams.get('sheetId')?.toString();
-    const sheetName = searchParams.get('sheetName')?.toString() || 'Sheet1';
+    const { spreadsheetId, sheetName, value } = await req.json();
 
     if (!spreadsheetId) {
       return NextResponse.json({ message: 'Missing sheetId' }, { status: 400 });
     }
-    if (!body.updates || !Array.isArray(body.updates)) {
-      return NextResponse.json({ message: 'Invalid request body' }, { status: 400 });
-    }
-
-    const data = body.updates.map(({ row, values }) => ({
-      range: `${sheetName}!A${row}`, // starting at column A
-      values: [values],
-    }));
-
-    await sheets.spreadsheets.values.batchUpdate({
+    await sheets.spreadsheets.values.update({
       spreadsheetId,
+      range: sheetName,
+      valueInputOption: "USER_ENTERED",
       requestBody: {
-        valueInputOption: 'RAW',
-        data,
+        values: value,
       },
     });
 
-    return NextResponse.json({ message: `Updated ${body.updates.length} rows successfully` });
+    return NextResponse.json({ message: `Updated  rows successfully` });
   } catch (e) {
     if (e instanceof Error) {
       return NextResponse.json({ error: e.message }, { status: 500 });

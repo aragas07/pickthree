@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range
+      range,
+      valueRenderOption: "FORMULA",
     });
 
     const value = response.data.values;

@@ -1,5 +1,6 @@
 'use client'
 import Spinner from '@/components/spinner'
+import { SheetNameMap, AssociateData, GameData, SheetData } from '@/data/reportParams'
 import React, { useState, useCallback, DragEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { RiErrorWarningFill } from "react-icons/ri"
 import { ImUpload2 } from "react-icons/im"
@@ -7,6 +8,7 @@ import { IoClose } from "react-icons/io5"
 import { TiArrowSortedDown } from "react-icons/ti"
 import type { TextItem } from 'pdfjs-dist/types/src/display/api'
 import Link from 'next/link'
+import { setSheetValue } from '@/utils/setSheetValue'
 
 export default function Report() {
     const [hasContent, setHasContent] = useState(false)
@@ -15,61 +17,67 @@ export default function Report() {
     const [sheetID, setSheetID] = useState('')
     const [sheets, setSheets] = useState<string[]>([])
     const [activeSheet, setActiveSheet] = useState(0)
-    const [data, setData] = useState<string[][]>([])
-    const [params, setParams] = useState<Parameter[][]>([])
+    const [data, setData] = useState<SheetData[]>([])
+    const [params, setParams] = useState<AssociateData[]>([])
     const [draw, setDraw] = useState('')
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
     const [fourD, setFourD] = useState('')
     const [threeD, setThreeD] = useState('')
     const [twoD, setTwoD] = useState('')
+    const [hitsTrigger, setHitsTrigger] = useState(0)
+    const [error, setError] = useState('')
 
     const handleGetSheets = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        setData([])
-
         const array = (e.target.value).split("/")
         const googleId = array[5]
         if (googleId.length > 20) {
             setLoading(true)
             const res = await fetch(`/api/get-sheets?sheetId=${googleId}`)
             const result = await res.json()
+            console.log(result)
             setSheets(result.sheets || [])
             setSheetID(googleId)
-            setParams(Array.from({ length: result.sheets.length }, () => []))
             if (res.status != 500)
-                getSheet(result.sheets[0], googleId)
+                getAllSheet(googleId)
             else {
                 setLoading(false)
                 setHasContent(true)
+                if(result.error) {
+                    setError(result.error)
+                }
             }
         }
     }
 
-
-    const getSheet = async (e: string, sheetId: string) => {
-        const res = await fetch(`/api/get-cell?sheetId=${sheetId}&sheetName=${e}`)
-        const result = await res.json()
-        setLoading(false)
-        setHasContent(true)
-        setData(result.value)
+    const getAllSheet = async (sheetId: string) => {
+        for (const key of Object.keys(SheetNameMap)) {
+            const limit = SheetNameMap[key];
+            const res = await fetch(`/api/get-cell?sheetId=${sheetId}&sheetName=${key}!${limit}`)
+            const result = await res.json()
+            setLoading(false)
+            setHasContent(true)
+            setData(prev => [...prev, { name: key, data: result.value }])
+            setParams(prev => [...prev, { area: key, gameData: null }])
+        }
     }
+
 
     const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
         e.preventDefault() // Necessary to allow drop
     }
 
-    const handleDrop = useCallback((e: DragEvent<HTMLLabelElement>, index: number) => {
+    const handleDrop = useCallback((e: DragEvent<HTMLLabelElement>, sheetName: string) => {
         e.preventDefault()
-
-        processFile(Array.from(e.dataTransfer.files), index)
+        processFile(Array.from(e.dataTransfer.files), sheetName)
     }, [])
 
-    const handleFileSelect = (e: ChangeEvent<HTMLInputElement>, index: number) => {
-        processFile(e.target.files ? Array.from(e.target.files) : [], index)
+    const handleFileSelect = (e: ChangeEvent<HTMLInputElement>, sheetName: string) => {
+        processFile(e.target.files ? Array.from(e.target.files) : [], sheetName)
     }
 
-    const processFile = useCallback(async (files: File[], sheetIndex: number) => {
+    const processFile = useCallback(async (files: File[], sheetName: string) => {
         setUploadFileLoading(true)
-        const paramArray: Parameter[] = []
+        const paramArray: GameData[] = []
         for (const file of files) {
             const arrayBuffer = await file.arrayBuffer()
             const pdfjsLib = await import("pdfjs-dist")
@@ -123,13 +131,15 @@ export default function Report() {
             const allText = allLines.join(" ")
             const match = allText.match(/(grand\s*total|total\s*amount)\s*[:\-]?\s*(₱|P)?\s*([\d,]+\.\d{2})/i)
             const game = allText.match(/(2D[1-3]|3D[1-3]|EZ2[1-3]|4DN|LST3|SWR2|S[2-4]|P3|last\s*[2-4]|[2-4]\s*digit|swertres)/i)
-            const base = allText.match(/(d11|central)/i)
+            const drawOrArea = allText.match(/([2-9]PM|[2-9]-PM|[2-9]:00\s*PM|central|d11)/i)
             total = match ? match[3] : '0'
-            paramArray.push({ file, game: game ? `${base ? base[0] : ''} ${game[0]}`.trimStart() : '', show: true, total, hits: '0', tables: detectedTables })
+            paramArray.push({ file, game: game ? game[0].trimStart() : '', show: true, total, hits: '0', drawOrArea: drawOrArea ? drawOrArea[0] : '', tables: detectedTables })
         }
         setParams(prev =>
-            prev.map((group, index) =>
-                index !== sheetIndex ? group : [...group, ...paramArray]
+            prev.map(group =>
+                group.area !== sheetName
+                    ? group
+                    : { area: group.area, gameData: group.gameData === null ? [...paramArray] : [...group.gameData ?? [], ...paramArray] }
             )
         )
         setUploadFileLoading(false)
@@ -139,45 +149,40 @@ export default function Report() {
         const date = new Date()
 
         const hours = date.getHours()
-        if (hours < 14) setDraw('1')
-        else if (hours < 17) setDraw('2')
-        else setDraw('3')
-        console.log('hour: ',hours)
+        if (hours < 14) setDraw('2pm')
+        else if (hours < 17) setDraw('5pm')
+        else setDraw('9pm')
     }, [])
 
-    // const handleUpdate = async (files: File[]) => {
-    //     const wholeData = data.map(data => {
-    //         const joinText = data.join('|')
-    //     }).join('!')
-    //     files.forEach(file => {
-
-    //     })
-    //     // const res = await fetch(`/api/update-sheet?sheetId=${sheetID}&sheetName=${sheet}`, {
-    //     // method: 'POST',
-    //     // headers: { 'Content-Type': 'application/json' },
-    //     // body: JSON.stringify({ }),
-    //     // })
-    // }
-    const handleRemove = (indexToRemove: number, arrayIndex: number) => {
-        setParams(prev => prev.map((param, index) => index === arrayIndex ? param.filter((_, idx) => idx !== indexToRemove) : param))
+    const handleRemove = (indexToRemove: number, sheetName: string) => {
+        setParams(prev => prev.map(item => item.area === sheetName ? {
+            ...item,
+            gameData: item.gameData?.filter((_, idx) => idx !== indexToRemove)
+        }
+            : item))
     }
 
     const changeActiveSheet = (index: number) => {
         setActiveSheet(index)
-        getSheet(sheets[index], sheetID)
     }
 
-    const displayFunction = (fileIndex: number, index: number) => {
+    const displayFunction = (fileIndex: number, sheetName: string) => {
         setParams(prev =>
-            prev.map((group, i) =>
-                i !== index ? group : group.map((value, j) => j === fileIndex ? { ...value, show: !value.show } : value)
+            prev.map(group =>
+                group.area !== sheetName
+                    ? group
+                    : { ...group, gameData: group.gameData?.map((item, index) => index === fileIndex ? { ...item, show: !item.show } : item) }
             )
         )
     }
     const findHits = () => {
+        const day = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
         setParams(prev =>
-            prev.map((group) =>
-                group.map((item) => {
+            prev.map(group =>
+            ({
+                ...group,
+                gameData: group.gameData?.map((item) => {
                     item.hits = '0'
                     const EZ2 = item.game.match(/(EZ2[1-3])/i)
                     const SWR2 = item.game.match(/(SWR2)/i)
@@ -191,15 +196,14 @@ export default function Report() {
                                 if (EZ2) {
                                     if (twoD === table[k])
                                         item.hits = hits
-                                } else if(SWR2) {
+                                } else if (SWR2) {
                                     if (threeD.substring(1) === table[k])
                                         item.hits = hits
-                                } else if(LST3) {
-                                    console.log('last 3 :', LST3, fourD.slice(-3), table[k])
-                                    if(fourD.slice(-3) === table[k])
+                                } else if (LST3) {
+                                    if (fourD.slice(-3) === table[k])
                                         item.hits = hits
                                 } else {
-                                    if (draw === '3') {
+                                    if (draw === '9pm' && day != 'Sunday') {
                                         const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
                                         if (sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === table[k])) {
                                             item.hits = hits
@@ -218,16 +222,36 @@ export default function Report() {
 
                     return item
                 })
+            })
             )
         )
+        setHitsTrigger(prev => prev + 1)
+    }
+
+    useEffect(() => {
+        loadData()
+    }, [hitsTrigger])
+
+    async function loadData() {
+        const result = await setSheetValue(data, params)
+        for (const value of result) {
+            const sheetRange = SheetNameMap[value.name]
+            const res = await fetch(`/api/update-sheet`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    spreadsheetId: sheetID,
+                    sheetName: `${value.name}!${sheetRange}`,
+                    value: value.data
+                }),
+            });
+        }
     }
 
     return (
         <main className="p-4 flex flex-col min-h-screen max-w-full mx-auto">
             <header className="w-full flex pb-4">
                 <Link href="/" className="absolute top-1 right-4 px-4 py-0.5 rounded-md border-2 border-gray-500 hover:bg-gray-500 transition hover:text-white">P3 Finder</Link>
-                <p hidden>15pJpi6hLjGjZH90m8gHZMfnIhKGDWZ8YwzUkpTM2NRk</p>
-                <p>https://docs.google.com/spreadsheets/d/17TI4KhMeDYBo1fW3PGEY3mvaC3k4d_L23_y38RRNOyo/edit?gid=1219487365#gid=1219487365</p>
                 <input
                     type="text"
                     placeholder="Enter Google Sheet ID"
@@ -254,12 +278,12 @@ export default function Report() {
                                                 value={draw}
                                                 onChange={it => setDraw(it.target.value)}
                                             >
-                                                <option value="1">1st Draw</option>
-                                                <option value="2">2nd Draw</option>
-                                                <option value="3">3rd Draw</option>
+                                                <option value="2pm">1st Draw</option>
+                                                <option value="5pm">2nd Draw</option>
+                                                <option value="9pm">3rd Draw</option>
                                             </select>
                                         </div>
-                                        <div hidden = {draw !== '3'} className='grid'>
+                                        <div hidden={draw !== '9pm'} className='grid'>
                                             <label>6D / 4D</label>
                                             <input
                                                 type="text"
@@ -298,9 +322,9 @@ export default function Report() {
                                 </div>
                                 {sheets.map((sheet, index) => (
                                     index === activeSheet ?
-                                        <div onLoad={() => getSheet(sheet, sheetID)} key={index} className="grid p-4">
+                                        <div key={index} className="grid p-4">
                                             <label
-                                                onDrop={(data) => handleDrop(data, index)}
+                                                onDrop={(data) => handleDrop(data, sheet)}
                                                 onDragOver={handleDragOver}
                                                 onClick={() => inputRefs.current[index]?.click()}
                                                 className='border-2 border-dashed p-16 rounded-2xl hover:bg-gray-100 bg-gray-50 hover:dark:bg-gray-900 dark:bg-gray-950'
@@ -319,25 +343,25 @@ export default function Report() {
                                                     multiple
                                                     ref={(el) => { inputRefs.current[index] = el }}
                                                     accept=".pdf"
-                                                    onChange={(data) => handleFileSelect(data, index)}
+                                                    onChange={(data) => handleFileSelect(data, sheet)}
                                                     className="w-full mb-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-100"
                                                 />
                                                 <div className="mb-4">
                                                     <div className="list-inside text-sm list-none">
                                                         {params.map((group, groupIndex) => (
-                                                            <ul key={groupIndex} hidden={groupIndex !== index}>
-                                                                {group.map((item, fileIndex) => (
+                                                            <ul key={groupIndex} hidden={group.area !== sheet}>
+                                                                {group.gameData?.map((item, fileIndex) => (
                                                                     <li
                                                                         key={fileIndex}
                                                                         className="group border p-4 rounded-lg bg-gray-50 dark:bg-gray-950 mt-4 transition-all"
                                                                     >
                                                                         <div className='grid'>
                                                                             <div className='m-1 cursor-pointer flex items-center justify-between'>
-                                                                                <h1 className="font-bold" onClick={() => { displayFunction(fileIndex, index) }}>{`( ${item.game} ) ${item.file.name.replace(item.game, "")}`}</h1>
+                                                                                <h1 className="font-bold" onClick={() => { displayFunction(fileIndex, group.area) }}>{`${item.game} ( ${item.drawOrArea} )`}</h1>
                                                                                 <div>
-                                                                                    <TiArrowSortedDown className={`group-hover:inline text-xl hidden transition ${item.show ? 'rotate-180' : ''}`} onClick={() => { displayFunction(fileIndex, index) }} />
+                                                                                    <TiArrowSortedDown className={`group-hover:inline text-xl hidden transition ${item.show ? 'rotate-180' : ''}`} onClick={() => { displayFunction(fileIndex, sheet) }} />
                                                                                     <IoClose
-                                                                                        onClick={() => handleRemove(fileIndex, index)}
+                                                                                        onClick={() => handleRemove(fileIndex, group.area)}
                                                                                         className="ml-3 group-hover:inline hidden text-xl hover:bg-gray-500 rounded-2xl hover:text-white transition duration-200 cursor-pointer"
                                                                                     />
                                                                                     <div hidden={item.show ? false : true} className="group-hover:hidden inline">
@@ -370,13 +394,13 @@ export default function Report() {
                                                                                                                         const isEZgame = item.game.match(/(EZ2[1-3])/i)
                                                                                                                         const threeMatch = threeD === cell
                                                                                                                         const fourAndTwoD = fourD.slice(-4) === cell || fourD.slice(-2) === cell
-                                                                                                                        const isMatch = isEZgame ? twoD === cell ? true : false : 
-                                                                                                                            SWR2 ? threeD.substring(1) === cell ? true : false : 
-                                                                                                                                LST3 ? fourD.slice(-3) === cell ? true : false : draw === '3' ?
+                                                                                                                        const isMatch = isEZgame ? twoD === cell ? true : false :
+                                                                                                                            SWR2 ? threeD.substring(1) === cell ? true : false :
+                                                                                                                                LST3 ? fourD.slice(-3) === cell ? true : false : draw === '9pm' ?
                                                                                                                                     sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === cell) ?
                                                                                                                                         true : fourAndTwoD || threeMatch ?
-                                                                                                                                            true : false : 
-                                                                                                                                                threeD.substring(1) === cell || threeMatch || fourD.slice(-4) === cell
+                                                                                                                                            true : false :
+                                                                                                                                    threeD.substring(1) === cell || threeMatch || fourD.slice(-4) === cell
                                                                                                                         return (
                                                                                                                             <td
                                                                                                                                 key={cIdx}
@@ -412,34 +436,28 @@ export default function Report() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            {/* <table className="min-w-full border border-gray-300 rounded-lg shadow">
-                                    <thead className="bg-blue-600 text-white">
-                                    <tr>
-                                        {data[0].map((header, i) => (
-                                        <th key={i} className="px-4 py-2 text-left border border-gray-300">
-                                            {header}
-                                        </th>
-                                        ))}
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {data.slice(1).map((row, i) => (
-                                        <tr key={i} className="hover:bg-blue-50">
-                                        {row.map((cell, j) => (
-                                            <td key={j} className="px-4 py-2 border border-gray-300">
-                                            {cell}
-                                            </td>
-                                        ))}
-                                        </tr>
-                                    ))}
-                                    </tbody>
-                                </table> */}
+                                            <table>
+                                                <tbody>
+                                                    {data.map((item) =>
+                                                        item.name === sheets[activeSheet] ?
+                                                            item.data.map((row, i) =>
+                                                                <tr key={i}>
+                                                                    {
+                                                                        row.map((cell, j) =>
+                                                                            <td key={j} className='border'>{cell}</td>
+                                                                        )
+                                                                    }
+                                                                </tr>
+                                                            ) : null
+                                                    )}
+                                                </tbody>
+                                            </table>
                                         </div> : null
                                 ))}
                             </div> :
                             <div>
                                 <RiErrorWarningFill size="120" className='mx-auto mb-4' />
-                                <h1 className='text-2xl'>Invalid Google Sheet ID</h1>
+                                <h1 className='text-2xl'>{error || 'Invalid Google Sheet ID'}</h1>
                             </div> :
                         <div>
                             <h1 className="text-6xl">No Google Sheet</h1>
