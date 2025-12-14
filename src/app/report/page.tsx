@@ -238,7 +238,7 @@ export default function Report() {
         const result = await setSheetValue(data, params)
         for (const value of result) {
             const sheetRange = SheetNameMap[value.name]
-            const res = await fetch(`/api/update-sheet`, {
+            await fetch(`/api/update-sheet`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -438,7 +438,7 @@ export default function Report() {
                                                     </div>
                                                 </div>
                                             </div>
-                                             <table>
+                                             {/* <table>
                                                 <tbody>
                                                     {data.map((item) =>
                                                         item.name === sheets[activeSheet] ?
@@ -453,7 +453,7 @@ export default function Report() {
                                                             ) : null
                                                     )}
                                                 </tbody>
-                                            </table>
+                                            </table> */}
                                         </div> : null
                                 ))}
                             </div> :

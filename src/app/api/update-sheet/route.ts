@@ -6,9 +6,6 @@ interface RowUpdate {
   values: (string | number)[];
 }
 
-interface RequestBody {
-  updates: RowUpdate[];
-}
 
 export async function POST(req: NextRequest) {
   try {

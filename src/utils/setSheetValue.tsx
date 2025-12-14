@@ -37,7 +37,7 @@ export async function setSheetValue(
                     let belong = false
                     let i = 0
                     let hitsPosition = 10
-                    let tableData: string[][] = sheetCurrentData.data ?? []
+                    const tableData: string[][] = sheetCurrentData.data ?? []
                     let rowLength = 0
                     for (const row of sheet.data) {
                         if (rowLength <= row.length)
@@ -62,7 +62,6 @@ export async function setSheetValue(
                                     colData = tableData[i][j] !== undefined ? tableData[i][j] : row[count]
                                 }
                                 tableData[i][j] = colData
-                                const c = googleTimeToHHMMSS(row[count])
                                 if (row[count]?.toString().includes(normalizeTime(filedata.drawOrArea).toUpperCase())) {
                                     belong = true
                                 } else if (row[count]?.toString().includes(filedata.drawOrArea)) {
