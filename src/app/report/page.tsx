@@ -207,6 +207,8 @@ export default function Report() {
                                         const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
                                         if (sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === table[k])) {
                                             item.hits = hits
+                                        } else if(sheets[activeSheet] == 'EDDIE BOY' && (threeD === table[k] || threeD.substring(1) === table[k] || fourD.slice(-4) === table[k])) {
+                                            item.hits = hits
                                         } else if (fourAndTwoD || threeD === table[k]) {
                                             item.hits = hits
                                         }
@@ -302,7 +304,7 @@ export default function Report() {
                                             />
                                         </div>
                                         <div className='grid'>
-                                            <label>2D</label>
+                                            <label>EZ2 (2D)</label>
                                             <input
                                                 type="text"
                                                 className="border rounded-sm py-1 px-3 border-gray-500"
@@ -436,7 +438,7 @@ export default function Report() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <table>
+                                             <table>
                                                 <tbody>
                                                     {data.map((item) =>
                                                         item.name === sheets[activeSheet] ?
