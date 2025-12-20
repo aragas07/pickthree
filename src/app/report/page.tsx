@@ -9,6 +9,7 @@ import { TiArrowSortedDown } from "react-icons/ti"
 import type { TextItem } from 'pdfjs-dist/types/src/display/api'
 import Link from 'next/link'
 import { setSheetValue } from '@/utils/setSheetValue'
+import { ItemCard } from './itemCard'
 
 export default function Report() {
     const [hasContent, setHasContent] = useState(false)
@@ -248,6 +249,14 @@ export default function Report() {
         }
     }
 
+    const clear = () => {
+        const initialParams: AssociateData[] = []
+        setTwoD("")
+        setThreeD("")
+        setFourD("")
+        setParams(prev => prev.map(item => ({...item, gameData: []})))
+    }
+
     return (
         <main className="p-4 flex flex-col min-h-screen max-w-full mx-auto">
             <header className="w-full flex pb-4">
@@ -269,7 +278,7 @@ export default function Report() {
                     hasContent ?
                         sheets.length != 0 ?
                             <div className='p-4'>
-                                <div className="grid w-fit mx-auto">
+                                <div className="w-fit mx-auto">
                                     <div className='flex gap-4'>
                                         <div className="grid">
                                             <label className="mb-2">Draw</label>
@@ -311,7 +320,10 @@ export default function Report() {
                                             />
                                         </div>
                                     </div>
-                                    <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button>
+                                    <div className="flex justify-between">
+                                        <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button>
+                                        <button type="button" onClick={clear} className="bg-amber-400 px-8 mt-4 py-1.5 text-white rounded-lg dark:text-black">Clear</button>
+                                    </div>
                                 </div>
                                 <div className='flex'>
                                     {sheets.map((sheet, index) => (
@@ -374,59 +386,7 @@ export default function Report() {
                                                                             </div>
                                                                             {item.show ?
                                                                                 <></> :
-                                                                                <div>
-                                                                                    {/* Results */}
-                                                                                    <h1 className="font-bold text-lg mt-4">Total hits: ₱ {item.hits}</h1>
-
-                                                                                    {/* Display extracted tables */}
-                                                                                    {item.tables.length > 0 && (
-                                                                                        <div className="mt-4">
-                                                                                            <h2 className="font-bold text-lg mb-2">Grand Total: ₱ {item.total}</h2>
-                                                                                            <div className="grid table-grid gap-8">
-                                                                                                {item.tables.map((table, idx) => (
-                                                                                                    <table key={idx} border={1} className="mb-8">
-                                                                                                        <tbody>
-                                                                                                            {table.map((row, rIdx) => (
-                                                                                                                <tr key={rIdx}>
-                                                                                                                    {row.map((cell, cIdx) => {
-                                                                                                                        const LST3 = item.game.match(/(LST3)/i)
-                                                                                                                        const SWR2 = item.game.match(/(SWR2)/i)
-                                                                                                                        const isEZgame = item.game.match(/(EZ2[1-3])/i)
-                                                                                                                        const threeMatch = threeD === cell
-                                                                                                                        const fourAndTwoD = fourD.slice(-4) === cell || fourD.slice(-2) === cell
-                                                                                                                        const isMatch = isEZgame ? twoD === cell ? true : false :
-                                                                                                                            SWR2 ? threeD.substring(1) === cell ? true : false :
-                                                                                                                                LST3 ? fourD.slice(-3) === cell ? true : false : draw === '9pm' ?
-                                                                                                                                    sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === cell) ?
-                                                                                                                                        true : fourAndTwoD || threeMatch ?
-                                                                                                                                            true : false :
-                                                                                                                                    threeD.substring(1) === cell || threeMatch || fourD.slice(-4) === cell
-                                                                                                                        return (
-                                                                                                                            <td
-                                                                                                                                key={cIdx}
-                                                                                                                                className={isMatch
-                                                                                                                                    ? "bg-black text-white dark:bg-neutral-500"
-                                                                                                                                    : ""}
-                                                                                                                                style={{
-                                                                                                                                    padding: "4px 8px",
-                                                                                                                                    border: "1px solid #ccc",
-                                                                                                                                    whiteSpace: "nowrap",
-                                                                                                                                    textAlign: "center",
-                                                                                                                                }}
-                                                                                                                            >
-                                                                                                                                {cell}
-                                                                                                                            </td>
-                                                                                                                        )
-                                                                                                                    })}
-                                                                                                                </tr>
-                                                                                                            ))}
-                                                                                                        </tbody>
-                                                                                                    </table>
-                                                                                                ))}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
+                                                                                <ItemCard item={item} twoD={twoD} threeD={threeD} fourD={fourD} sheet={sheets[activeSheet]} draw={draw} />
                                                                             }
                                                                         </div>
                                                                     </li>
@@ -436,22 +396,6 @@ export default function Report() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <table>
-                                                <tbody>
-                                                    {data.map((item) =>
-                                                        item.name === sheets[activeSheet] ?
-                                                            item.data.map((row, i) =>
-                                                                <tr key={i}>
-                                                                    {
-                                                                        row.map((cell, j) =>
-                                                                            <td key={j} className='border'>{cell}</td>
-                                                                        )
-                                                                    }
-                                                                </tr>
-                                                            ) : null
-                                                    )}
-                                                </tbody>
-                                            </table>
                                         </div> : null
                                 ))}
                             </div> :
