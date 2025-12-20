@@ -10,6 +10,8 @@ import type { TextItem } from 'pdfjs-dist/types/src/display/api'
 import Link from 'next/link'
 import { setSheetValue } from '@/utils/setSheetValue'
 import { ItemCard } from './itemCard'
+import { toast, Toaster } from 'react-hot-toast'
+import Image from "next/image"
 
 export default function Report() {
     const [hasContent, setHasContent] = useState(false)
@@ -27,6 +29,7 @@ export default function Report() {
     const [twoD, setTwoD] = useState('')
     const [hitsTrigger, setHitsTrigger] = useState(0)
     const [error, setError] = useState('')
+    const [submitting, setSubmitting] = useState(false)
 
     const handleGetSheets = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const array = (e.target.value).split("/")
@@ -177,6 +180,7 @@ export default function Report() {
         )
     }
     const findHits = () => {
+        setSubmitting(true)
         const day = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
         setParams(prev =>
@@ -207,6 +211,8 @@ export default function Report() {
                                     if (draw === '9pm' && day != 'Sunday') {
                                         const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
                                         if (sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === table[k])) {
+                                            item.hits = hits
+                                        } else if(sheets[activeSheet] == 'EDDIE BOY' && (threeD === table[k] || threeD.substring(1) === table[k] || fourD.slice(-4) === table[k])) {
                                             item.hits = hits
                                         } else if (fourAndTwoD || threeD === table[k]) {
                                             item.hits = hits
@@ -244,13 +250,19 @@ export default function Report() {
                     spreadsheetId: sheetID,
                     sheetName: `${value.name}!${sheetRange}`,
                     value: value.data
-                }),
+                })
             });
+            if(res.status !== 500) {
+                for (const par of params) 
+                    if(par.gameData !== undefined && par.area === value.name) {
+                        toast.success(`${value.name} has been filled up!`)
+                    }
+            }
         }
+        setSubmitting(false)
     }
 
     const clear = () => {
-        const initialParams: AssociateData[] = []
         setTwoD("")
         setThreeD("")
         setFourD("")
@@ -259,6 +271,7 @@ export default function Report() {
 
     return (
         <main className="p-4 flex flex-col min-h-screen max-w-full mx-auto">
+            <Toaster position="bottom-right" />
             <header className="w-full flex pb-4">
                 <Link href="/" className="absolute top-1 right-4 px-4 py-0.5 rounded-md border-2 border-gray-500 hover:bg-gray-500 transition hover:text-white">P3 Finder</Link>
                 <input
@@ -311,7 +324,7 @@ export default function Report() {
                                             />
                                         </div>
                                         <div className='grid'>
-                                            <label>2D</label>
+                                            <label>EZ2 (2D)</label>
                                             <input
                                                 type="text"
                                                 className="border rounded-sm py-1 px-3 border-gray-500"
@@ -321,7 +334,9 @@ export default function Report() {
                                         </div>
                                     </div>
                                     <div className="flex justify-between">
-                                        <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button>
+                                        {submitting ? <Image className="ml-4" src="loading.svg" color='#444' alt="Spinner" width={24} height={24} />:
+                                            <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button> 
+                                        }
                                         <button type="button" onClick={clear} className="bg-amber-400 px-8 mt-4 py-1.5 text-white rounded-lg dark:text-black">Clear</button>
                                     </div>
                                 </div>
@@ -341,7 +356,7 @@ export default function Report() {
                                                 onClick={() => inputRefs.current[index]?.click()}
                                                 className='border-2 border-dashed p-16 rounded-2xl hover:bg-gray-100 bg-gray-50 hover:dark:bg-gray-900 dark:bg-gray-950'
                                             >
-                                                {uploadFileLoading ? <Spinner /> : <div className="justify-center text-center font-semibold text-gray-800 dark:text-gray-100">
+                                                {uploadFileLoading ? <Spinner/> : <div className="justify-center text-center font-semibold text-gray-800 dark:text-gray-100">
                                                     <ImUpload2 className='mx-auto mb-2' size='36' />
                                                     <p>Drag & Drop to Upload multiple file</p>
                                                     <p>Or</p>

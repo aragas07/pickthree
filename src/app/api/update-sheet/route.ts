@@ -6,9 +6,6 @@ interface RowUpdate {
   values: (string | number)[];
 }
 
-interface RequestBody {
-  updates: RowUpdate[];
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +23,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ message: `Updated  rows successfully` });
+    return NextResponse.json({success: 'Success', message: `Updated  rows successfully` });
   } catch (e) {
     if (e instanceof Error) {
       return NextResponse.json({ error: e.message }, { status: 500 });

@@ -10,6 +10,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
   const [total, setTotal] = useState<number>(0.00);
   const [tables, setTables] = useState<string[][][]>([]);
   const [lines] = useState<string[]>([]);
+  const [gross, setGross] = useState('');
   useEffect(() => {
     if (lines.length > 0 && permutations.length > 0) {
       matchHits(lines, permutations);
@@ -44,14 +45,12 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       let currentRow: string[] = [];
       let lastY: number | null = null;
 
-      console.log(`${content} == content`);
       for (const item of pageTextItems) {
         const text = item.str.trim();
         if(text.length != 0) {
           const y = item.transform[5]; // Y coordinate
           // Group items that are on the same line (same Y)
           if (lastY === null || Math.abs(y - lastY) < 5) {
-            console.log(`${text} == row`);
             currentRow.push(text);
           } else {
             if (currentRow.length > 1) {
@@ -75,6 +74,9 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       }
     }
 
+    const allText = lines.join(" ")
+    const match = allText.match(/(grand\s*total|total\s*amount)\s*[:\-]?\s*(₱|P)?\s*([\d,]+\.\d{2})/i)
+    setGross(match ? match[3] : '0')
     setTables(detectedTables);
   };
   const matchHits = (linesToCheck: string[], newPermutations: string[][]) => {
@@ -114,7 +116,7 @@ const PDFReader: React.FC<Props>= ({permutations}) => {
       {/* Display extracted tables */}
       {tables.length > 0 && (
         <div className="mt-8">
-          <h2 className="font-bold text-lg mb-2">Extracted Tables</h2>
+          <h2 className="font-bold text-lg mb-2">Grand Total : {gross}</h2>
           <div className="grid table-grid gap-8">
             {tables.map((table, idx) => (
               <table key={idx} border={1} className='mb-8'>

@@ -27,7 +27,7 @@ export async function setSheetValue(
         // If not numeric string, return as-is
         if (value.trim() === "" || isNaN(Number(value))) return value;
 
-        }
+    }
     for (const sheet of sheetData) {
         for (const assoc of params) {
             if (assoc.area === sheet.name) {
@@ -37,7 +37,7 @@ export async function setSheetValue(
                     let belong = false
                     let i = 0
                     let hitsPosition = 10
-                    let tableData: string[][] = sheetCurrentData.data ?? []
+                    const tableData: string[][] = sheetCurrentData.data ?? []
                     let rowLength = 0
                     for (const row of sheet.data) {
                         if (rowLength <= row.length)
@@ -62,12 +62,11 @@ export async function setSheetValue(
                                     colData = tableData[i][j] !== undefined ? tableData[i][j] : row[count]
                                 }
                                 tableData[i][j] = colData
-                                console.log(googleTimeToHHMMSS(row[count]), belong, isGame , normalizeTime(filedata.drawOrArea).toUpperCase(), row[count]?.toString().includes(normalizeTime(filedata.drawOrArea).toUpperCase()))
                                 if (row[count]?.toString().includes(normalizeTime(filedata.drawOrArea).toUpperCase())) {
                                     belong = true
                                 } else if (row[count]?.toString().includes(filedata.drawOrArea)) {
                                     belong = true
-                                } else if (googleTimeToHHMMSS(row[count]) === filedata.drawOrArea) {
+                                } else if (googleTimeToHHMMSS(row[count])?.toString().trim() === normalizeTime(filedata.drawOrArea).toUpperCase()) {
                                     belong = true
                                 }
                                 if (row[count]?.toString().match(/(hits)/i)) {
@@ -93,7 +92,7 @@ export async function setSheetValue(
                                     belong = true
                                 }
                                 
-                                if(belong && row[count] === DrawSet[filedata.drawOrArea]) {
+                                if(belong && row[count]?.toString() === DrawSet[filedata.drawOrArea]) {
                                     isGame = true
                                 }
                                 if (row[count]?.toString().match(/(u.h)/i)) {
@@ -106,6 +105,7 @@ export async function setSheetValue(
                         i++
                     }
                     fileIndex++
+                    console.log(tableData)
                 }
                 allSheetData.push(sheetCurrentData)
             }
