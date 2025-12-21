@@ -32,20 +32,22 @@ export default function Report() {
     const [submitting, setSubmitting] = useState(false)
 
     const handleGetSheets = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLoading(true)
         const array = (e.target.value).split("/")
-        const googleId = array[5]
+        getSheets(array[5])
+        setSheetID(array[5])
+        setHasContent(true)
+    }
+
+    const getSheets = async (googleId: string) => {
         if (googleId.length > 20) {
-            setLoading(true)
             const res = await fetch(`/api/get-sheets?sheetId=${googleId}`)
             const result = await res.json()
-            console.log(result)
             setSheets(result.sheets || [])
-            setSheetID(googleId)
             if (res.status != 500)
                 getAllSheet(googleId)
             else {
                 setLoading(false)
-                setHasContent(true)
                 if(result.error) {
                     setError(result.error)
                 }
@@ -59,12 +61,32 @@ export default function Report() {
             const res = await fetch(`/api/get-cell?sheetId=${sheetId}&sheetName=${key}!${limit}`)
             const result = await res.json()
             setLoading(false)
-            setHasContent(true)
             setData(prev => [...prev, { name: key, data: result.value }])
-            setParams(prev => [...prev, { area: key, gameData: null }])
+            if(params.length === 0) {
+                setParams(prev => [...prev, { area: key, gameData: null }])
+            }
+        }
+        if(params !== null) {
+            setParams(prev => prev.map(({ gameData, ...rest }) => rest))
         }
     }
 
+    const timeDraw = () => {
+        const date = new Date()
+
+        const hours = date.getHours()
+        if (hours < 14) setDraw('2pm')
+        else if (hours < 17) setDraw('5pm')
+        else setDraw('9pm')
+    }
+
+    const clear = () => {
+        timeDraw()
+        setTwoD("")
+        setThreeD("")
+        setFourD("")
+        getSheets(sheetID)
+    }
 
     const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
         e.preventDefault() // Necessary to allow drop
@@ -134,7 +156,7 @@ export default function Report() {
             }
             const allText = allLines.join(" ")
             const match = allText.match(/(grand\s*total|total\s*amount)\s*[:\-]?\s*(₱|P)?\s*([\d,]+\.\d{2})/i)
-            const game = allText.match(/(2D[1-3]|3D[1-3]|EZ2[1-3]|4DN|LST3|SWR2|S[2-4]|P3|last\s*[2-4]|[2-4]\s*digit|swertres)/i)
+            const game = allText.match(/(2D[1-3]|3D[1-3]|EZ2[1-3]|4DN|LST3|SWR2|S[2-4]|P3N|P3|last\s*[2-4]|[2-4]\s*digit|swertres)/i)
             const drawOrArea = allText.match(/([2-9]PM|[2-9]-PM|[2-9]:00\s*PM|central|d11)/i)
             total = match ? match[3] : '0'
             paramArray.push({ file, game: game ? game[0].trimStart() : '', show: true, total, hits: '0', drawOrArea: drawOrArea ? drawOrArea[0] : '', tables: detectedTables })
@@ -150,13 +172,10 @@ export default function Report() {
     }, [])
 
     useEffect(() => {
-        const date = new Date()
-
-        const hours = date.getHours()
-        if (hours < 14) setDraw('2pm')
-        else if (hours < 17) setDraw('5pm')
-        else setDraw('9pm')
+        timeDraw()
     }, [])
+
+
 
     const handleRemove = (indexToRemove: number, sheetName: string) => {
         setParams(prev => prev.map(item => item.area === sheetName ? {
@@ -208,7 +227,7 @@ export default function Report() {
                                     if (fourD.slice(-3) === table[k])
                                         item.hits = hits
                                 } else {
-                                    if (draw === '9pm' && day != 'Sunday') {
+                                    if (draw === '9pm' && day !== 'Sunday') {
                                         const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
                                         if (sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === table[k])) {
                                             item.hits = hits
@@ -262,12 +281,6 @@ export default function Report() {
         setSubmitting(false)
     }
 
-    const clear = () => {
-        setTwoD("")
-        setThreeD("")
-        setFourD("")
-        setParams(prev => prev.map(item => ({...item, gameData: []})))
-    }
 
     return (
         <main className="p-4 flex flex-col min-h-screen max-w-full mx-auto">
@@ -418,9 +431,9 @@ export default function Report() {
                                 <RiErrorWarningFill size="120" className='mx-auto mb-4' />
                                 <h1 className='text-2xl'>{error || 'Invalid Google Sheet ID'}</h1>
                             </div> :
-                        <div>
-                            <h1 className="text-6xl">No Google Sheet</h1>
-                        </div>
+                            <div>
+                                <h1 className="text-6xl">No Google Sheet</h1>
+                            </div>
                 }
             </main>
         </main>
