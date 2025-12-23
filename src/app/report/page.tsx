@@ -1,6 +1,7 @@
 'use client'
 import Spinner from '@/components/spinner'
-import { SheetNameMap, AssociateData, GameData, SheetData } from '@/data/reportParams'
+import { date, day } from '@/utils/utils'
+import { SheetNameMap, AssociateData, GameData, SheetData, Mati, Eddieboy } from '@/data/reportParams'
 import React, { useState, useCallback, DragEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { RiErrorWarningFill } from "react-icons/ri"
 import { ImUpload2 } from "react-icons/im"
@@ -12,6 +13,8 @@ import { setSheetValue } from '@/utils/setSheetValue'
 import { ItemCard } from './itemCard'
 import { toast, Toaster } from 'react-hot-toast'
 import Image from "next/image"
+import SixColumnInput from '@/components/SixColumnInput'
+import { pj, edieboy, other } from './hitting'
 
 export default function Report() {
     const [hasContent, setHasContent] = useState(false)
@@ -30,6 +33,9 @@ export default function Report() {
     const [hitsTrigger, setHitsTrigger] = useState(0)
     const [error, setError] = useState('')
     const [submitting, setSubmitting] = useState(false)
+    const [inputValues, setInputValues] = useState<string[]>(Array(6).fill(''))
+    const [pickThreeTitle, setPickThreeTitle] = useState("")
+
 
     const handleGetSheets = async (e: React.ChangeEvent<HTMLInputElement>) => {
         setLoading(true)
@@ -48,11 +54,14 @@ export default function Report() {
                 getAllSheet(googleId)
             else {
                 setLoading(false)
-                if(result.error) {
+                if (result.error) {
                     setError(result.error)
                 }
             }
         }
+        timeDraw()
+        console.log(day() !== 'Sunday' && draw === '9pm')
+        console.log(`${draw}`)
     }
 
     const getAllSheet = async (sheetId: string) => {
@@ -62,21 +71,18 @@ export default function Report() {
             const result = await res.json()
             setLoading(false)
             setData(prev => [...prev, { name: key, data: result.value }])
-            if(params.length === 0) {
+            if (params.length === 0) {
                 setParams(prev => [...prev, { area: key, gameData: null }])
             }
         }
-        if(params !== null) {
+        if (params !== null) {
             setParams(prev => prev.map(({ gameData, ...rest }) => rest))
         }
     }
 
     const timeDraw = () => {
-        const date = new Date()
-
-        const hours = date.getHours()
-        if (hours < 14) setDraw('2pm')
-        else if (hours < 17) setDraw('5pm')
+        if (date() < 14) setDraw('2pm')
+        else if (date() < 17) setDraw('5pm')
         else setDraw('9pm')
     }
 
@@ -171,11 +177,6 @@ export default function Report() {
         setUploadFileLoading(false)
     }, [])
 
-    useEffect(() => {
-        timeDraw()
-    }, [])
-
-
 
     const handleRemove = (indexToRemove: number, sheetName: string) => {
         setParams(prev => prev.map(item => item.area === sheetName ? {
@@ -187,6 +188,7 @@ export default function Report() {
 
     const changeActiveSheet = (index: number) => {
         setActiveSheet(index)
+        setPickThreeTitle(sheets[index] === "MATI" ? Mati[day()] : Eddieboy[day()])
     }
 
     const displayFunction = (fileIndex: number, sheetName: string) => {
@@ -200,7 +202,8 @@ export default function Report() {
     }
     const findHits = () => {
         setSubmitting(true)
-        const day = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        console.log(day() !== 'Sunday' && draw === '9pm')
+        console.log(`${draw}`)
 
         setParams(prev =>
             prev.map(group =>
@@ -227,13 +230,14 @@ export default function Report() {
                                     if (fourD.slice(-3) === table[k])
                                         item.hits = hits
                                 } else {
-                                    if (draw === '9pm' && day !== 'Sunday') {
+                                    if (draw === '9pm' && day() !== 'Sunday') {
                                         const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
-                                        if (sheets[activeSheet] === 'PJ' && (fourAndTwoD || fourD.slice(-3) === table[k])) {
+                                        console.log(`${table[k]} ${table[k].length}`)
+                                        if (sheets[activeSheet] === 'PJ' && pj(fourD, table[k], item.game)) {
                                             item.hits = hits
-                                        } else if(sheets[activeSheet] == 'EDDIE BOY' && (threeD === table[k] || threeD.substring(1) === table[k] || fourD.slice(-4) === table[k])) {
+                                        } else if (sheets[activeSheet] === 'EDDIE BOY' && edieboy(fourD, threeD, twoD, table[k], item.game)) {
                                             item.hits = hits
-                                        } else if (fourAndTwoD || threeD === table[k]) {
+                                        } else if (sheets[activeSheet] !== 'PJ' && other(fourD, threeD, table[k])) {
                                             item.hits = hits
                                         }
                                     } else {
@@ -271,9 +275,9 @@ export default function Report() {
                     value: value.data
                 })
             });
-            if(res.status !== 500) {
-                for (const par of params) 
-                    if(par.gameData !== undefined && par.area === value.name) {
+            if (res.status !== 500) {
+                for (const par of params)
+                    if (par.gameData !== undefined && par.area === value.name) {
                         toast.success(`${value.name} has been filled up!`)
                     }
             }
@@ -346,9 +350,13 @@ export default function Report() {
                                             />
                                         </div>
                                     </div>
+                                    <div className="flex grid justify-center mt-4">
+                                        <label>Input {pickThreeTitle}</label>
+                                        <SixColumnInput values={inputValues} onChange={setInputValues} />
+                                    </div>
                                     <div className="flex justify-between">
-                                        {submitting ? <Image className="ml-4" src="loading.svg" color='#444' alt="Spinner" width={24} height={24} />:
-                                            <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button> 
+                                        {submitting ? <Image className="ml-4" src="loading.svg" color='#444' alt="Spinner" width={24} height={24} /> :
+                                            <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button>
                                         }
                                         <button type="button" onClick={clear} className="bg-amber-400 px-8 mt-4 py-1.5 text-white rounded-lg dark:text-black">Clear</button>
                                     </div>
@@ -369,7 +377,7 @@ export default function Report() {
                                                 onClick={() => inputRefs.current[index]?.click()}
                                                 className='border-2 border-dashed p-16 rounded-2xl hover:bg-gray-100 bg-gray-50 hover:dark:bg-gray-900 dark:bg-gray-950'
                                             >
-                                                {uploadFileLoading ? <Spinner/> : <div className="justify-center text-center font-semibold text-gray-800 dark:text-gray-100">
+                                                {uploadFileLoading ? <Spinner /> : <div className="justify-center text-center font-semibold text-gray-800 dark:text-gray-100">
                                                     <ImUpload2 className='mx-auto mb-2' size='36' />
                                                     <p>Drag & Drop to Upload multiple file</p>
                                                     <p>Or</p>
@@ -431,9 +439,9 @@ export default function Report() {
                                 <RiErrorWarningFill size="120" className='mx-auto mb-4' />
                                 <h1 className='text-2xl'>{error || 'Invalid Google Sheet ID'}</h1>
                             </div> :
-                            <div>
-                                <h1 className="text-6xl">No Google Sheet</h1>
-                            </div>
+                        <div>
+                            <h1 className="text-6xl">No Google Sheet</h1>
+                        </div>
                 }
             </main>
         </main>

@@ -1,5 +1,6 @@
 import { GameData } from "@/data/reportParams"
 import React from "react"
+import { pj, edieboy, other } from './hitting'
 type Props = {
     item: GameData;
     twoD: string;
@@ -27,12 +28,11 @@ export const ItemCard: React.FC<Props> = ({item, twoD, threeD, fourD, sheet, dra
                                                 const SWR2 = item.game.match(/(SWR2)/i)
                                                 const isEZgame = item.game.match(/(EZ2[1-3])/i)
                                                 const threeMatch = threeD === cell
-                                                const fourAndTwoD = fourD.slice(-4) === cell || fourD.slice(-2) === cell
                                                 const isMatch = isEZgame ? twoD === cell ? true : false :
                                                     SWR2 ? threeD.substring(1) === cell ? true : false :
                                                         LST3 ? fourD.slice(-3) === cell ? true : false : draw === '9pm' ?
-                                                            sheet === 'PJ' && (fourAndTwoD || fourD.slice(-3) === cell) ?
-                                                                true : fourAndTwoD || threeMatch ?
+                                                            sheet === 'PJ' && pj(fourD, cell, item.game)?
+                                                                true : sheet === 'EDDIE BOY' || threeMatch ?
                                                                     true : false :
                                                             threeD.substring(1) === cell || threeMatch || fourD.slice(-4) === cell
                                                 return (

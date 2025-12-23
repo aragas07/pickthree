@@ -13,6 +13,25 @@ export type AssociateData = {
     gameData?: GameData[] | null
 }
 
+export const Mati: Record<string, string> = {
+    "Monday": "6/45",
+    "Tuesday": "6/49",
+    "Wednesday": "6/45",
+    "Thursday": "6/49",
+    "Friday": "6/45",
+    "Saturday": "6/42",
+    "Sunday": "6/49"
+}
+
+export const Eddieboy: Record<string, string> = {
+    "Monday": "6/45",
+    "Tuesday": "6/42",
+    "Wednesday": "6/45",
+    "Thursday": "6/49",
+    "Friday": "6/45",
+    "Saturday": "6/42",
+    "Sunday": "6/49"
+}
 
 export const SheetNameMap: Record<string, string> = {
     "EDDIE BOY": "A:D",
