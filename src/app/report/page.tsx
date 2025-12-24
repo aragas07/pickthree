@@ -1,6 +1,6 @@
 'use client'
 import Spinner from '@/components/spinner'
-import { date, day } from '@/utils/utils'
+import { date, day, sleep } from '@/utils/utils'
 import { SheetNameMap, AssociateData, GameData, SheetData, Mati, Eddieboy } from '@/data/reportParams'
 import React, { useState, useCallback, DragEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { RiErrorWarningFill } from "react-icons/ri"
@@ -59,6 +59,7 @@ export default function Report() {
                 }
             }
         }
+        setPickThreeTitle(sheets[activeSheet] === "MATI" ? Mati[day()] : Eddieboy[day()])
         timeDraw()
         console.log(day() !== 'Sunday' && draw === '9pm')
         console.log(`${draw}`)
@@ -200,11 +201,9 @@ export default function Report() {
             )
         )
     }
-    const findHits = () => {
+    const findHits = async () => {
         setSubmitting(true)
-        console.log(day() !== 'Sunday' && draw === '9pm')
-        console.log(`${draw}`)
-
+        await sleep(1000)
         setParams(prev =>
             prev.map(group =>
             ({
@@ -214,35 +213,42 @@ export default function Report() {
                     const EZ2 = item.game.match(/(EZ2[1-3])/i)
                     const SWR2 = item.game.match(/(SWR2)/i)
                     const LST3 = item.game.match(/(LST3)/i)
-                    for (let i = 0; i < item.tables.length; i++) {
-                        const tableGroup = item.tables[i]
-                        for (let j = 0; j < tableGroup.length; j++) {
-                            const table = tableGroup[j]
-                            for (let k = 0; k < table.length; k++) {
-                                const hits = item.tables[i][j][k + 1] === '₱' ? item.tables[i][j][k + 2] : item.tables[i][j][k + 1]
-                                if (EZ2) {
-                                    if (twoD === table[k])
-                                        item.hits = hits
-                                } else if (SWR2) {
-                                    if (threeD.substring(1) === table[k])
-                                        item.hits = hits
-                                } else if (LST3) {
-                                    if (fourD.slice(-3) === table[k])
-                                        item.hits = hits
-                                } else {
-                                    if (draw === '9pm' && day() !== 'Sunday') {
-                                        const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
-                                        console.log(`${table[k]} ${table[k].length}`)
-                                        if (sheets[activeSheet] === 'PJ' && pj(fourD, table[k], item.game)) {
+                    if (item.game === 'P3N') {
+
+                    } else if (item.game == 'P3') {
+
+                    }
+                    else {
+                        for (let i = 0; i < item.tables.length; i++) {
+                            const tableGroup = item.tables[i]
+                            for (let j = 0; j < tableGroup.length; j++) {
+                                const table = tableGroup[j]
+                                for (let k = 0; k < table.length; k++) {
+                                    const hits = item.tables[i][j][k + 1] === '₱' ? item.tables[i][j][k + 2] : item.tables[i][j][k + 1]
+                                    if (EZ2) {
+                                        if (twoD === table[k])
                                             item.hits = hits
-                                        } else if (sheets[activeSheet] === 'EDDIE BOY' && edieboy(fourD, threeD, twoD, table[k], item.game)) {
+                                    } else if (SWR2) {
+                                        if (threeD.substring(1) === table[k])
                                             item.hits = hits
-                                        } else if (sheets[activeSheet] !== 'PJ' && other(fourD, threeD, table[k])) {
+                                    } else if (LST3) {
+                                        if (fourD.slice(-3) === table[k])
                                             item.hits = hits
-                                        }
                                     } else {
-                                        if (threeD === table[k] || threeD.substring(1) === table[k] || fourD.slice(-4) === table[k]) {
-                                            item.hits = hits
+                                        if (draw === '9pm' && day() !== 'Sunday') {
+                                            const fourAndTwoD = fourD.slice(-4) === table[k] || fourD.slice(-2) === table[k]
+                                            console.log(`${table[k]} ${table[k].length}`)
+                                            if (sheets[activeSheet] === 'PJ' && pj(fourD, table[k], item.game)) {
+                                                item.hits = hits
+                                            } else if (sheets[activeSheet] === 'EDDIE BOY' && edieboy(fourD, threeD, twoD, table[k], item.game)) {
+                                                item.hits = hits
+                                            } else if (sheets[activeSheet] !== 'PJ' && other(fourD, threeD, table[k])) {
+                                                item.hits = hits
+                                            }
+                                        } else {
+                                            if (threeD === table[k] || threeD.substring(1) === table[k] || fourD.slice(-4) === table[k]) {
+                                                item.hits = hits
+                                            }
                                         }
                                     }
                                 }
@@ -350,10 +356,12 @@ export default function Report() {
                                             />
                                         </div>
                                     </div>
-                                    <div className="flex grid justify-center mt-4">
-                                        <label>Input {pickThreeTitle}</label>
-                                        <SixColumnInput values={inputValues} onChange={setInputValues} />
-                                    </div>
+                                    {/* {sheets[activeSheet] === 'MATI' || sheets[activeSheet] === 'EDDIE BOY' ?
+                                        <div className="grid justify-center mt-4">
+                                            <label>Input {pickThreeTitle}</label>
+                                            <SixColumnInput values={inputValues} onChange={setInputValues} />
+                                        </div> : null
+                                    } */}
                                     <div className="flex justify-between">
                                         {submitting ? <Image className="ml-4" src="loading.svg" color='#444' alt="Spinner" width={24} height={24} /> :
                                             <button type="button" onClick={findHits} className="text-white w-fit bg-blue-700 hover:bg-blue800 px-8 py-1.5 mt-4 rounded-lg">Submit</button>

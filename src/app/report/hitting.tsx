@@ -31,3 +31,7 @@ export const other = (fourD: string, threeD: string, combination: string): boole
         return true
     return false
 }
+
+export const edieboyPickThree = (tables: string[][][]) => {
+
+}

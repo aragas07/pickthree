@@ -8,3 +8,7 @@ export const date = () => {
 export const day = () => {
     return new Date().toLocaleDateString('en-US', { weekday: 'long' });
 }
+
+export const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
